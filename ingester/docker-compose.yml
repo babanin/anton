@@ -1,0 +1,26 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  agent-ingester:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      WEBHOOK_SECRET: changeme-in-production
+      RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672/
+      LOG_LEVEL: INFO
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

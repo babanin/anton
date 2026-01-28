@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.backends"
+
+[project]
+name = "agent-ingester"
+version = "0.1.0"
+description = "Webhook ingester that normalizes JIRA, Datadog, and SonarCloud events into AgentTask messages"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110,<1",
+    "uvicorn[standard]>=0.29,<1",
+    "pydantic>=2,<3",
+    "pydantic-settings>=2,<3",
+    "aio-pika>=9,<10",
+    "python-json-logger>=2,<3",
+]
