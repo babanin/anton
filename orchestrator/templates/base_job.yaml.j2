@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ job_name }}
+  namespace: {{ namespace }}
+  labels:
+    app: agent-runner
+    task-id: "{{ task_id }}"
+    template: "{{ template_id }}"
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: agent-runner
+        task-id: "{{ task_id }}"
+        template: "{{ template_id }}"
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: agent
+          image: {{ agent_image }}
+          env:
+            - name: TASK_ID
+              value: "{{ task_id }}"
+            - name: TEMPLATE_ID
+              value: "{{ template_id }}"
+            - name: COMPLEXITY
+              value: "{{ complexity }}"
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agent-secrets
+                  key: anthropic-api-key
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agent-secrets
+                  key: openai-api-key
+          volumeMounts:
+            - name: task-context
+              mountPath: /app/context
+              readOnly: true
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+      volumes:
+        - name: task-context
+          configMap:
+            name: {{ configmap_name }}
