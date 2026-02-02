@@ -38,6 +38,11 @@ spec:
                 secretKeyRef:
                   name: agent-secrets
                   key: openai-api-key
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: agent-secrets
+                  key: github-token
           volumeMounts:
             - name: task-context
               mountPath: /app/context
