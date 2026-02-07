@@ -20,21 +20,47 @@ Webhooks → Ingester (FastAPI) → RabbitMQ → Orchestrator → K8s Job (Runne
 
 ## Build & Run Commands
 
-```bash
-# Build Docker images
-docker build -t agent-ingester:latest ingester/
-docker build -t agent-runner:latest runner/
+### Local Development (Docker Compose)
 
-# Run ingester locally with RabbitMQ
+```bash
+cp .env.example .env   # fill in API keys
+docker compose up       # starts rabbitmq, ingester, orchestrator
+```
+
+- Ingester: http://localhost:8000 (health: `/health`)
+- RabbitMQ Management: http://localhost:15672 (rabbit/rabbit)
+- Orchestrator requires `~/.kube/config` pointing to a local K8s cluster (Docker Desktop, kind, minikube) to spawn runner jobs
+
+### Kubernetes
+
+```bash
+kubectl apply -f k8s/   # namespace, secrets, rabbitmq, ingester, orchestrator
+```
+
+- Edit `k8s/secrets.yaml` with base64-encoded keys before applying
+- Update image references to your registry
+
+### Build Docker Images
+
+```bash
+docker build -t agent-ingester:latest ingester/
+docker build -t agent-orchestrator:latest orchestrator/
+docker build -t agent-runner:latest runner/
+```
+
+### Per-Service Development
+
+```bash
+# Install dependencies
+pip install -r ingester/requirements.txt
+pip install -r orchestrator/requirements.txt
+pip install -r runner/requirements.txt
+
+# Run ingester only (with local RabbitMQ)
 cd ingester && docker compose up
 
 # Run runner locally (requires env vars)
 cd runner && python -m app
-
-# Install dependencies per service
-pip install -r ingester/requirements.txt
-pip install -r orchestrator/requirements.txt
-pip install -r runner/requirements.txt
 ```
 
 There are currently no test suites, linting, or formatting commands configured.

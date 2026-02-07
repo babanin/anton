@@ -1,0 +1,40 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingester:
+    build: ingester/
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672/
+      LOG_LEVEL: INFO
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  orchestrator:
+    build: orchestrator/
+    env_file: .env
+    environment:
+      RABBITMQ_URL: amqp://rabbit:rabbit@rabbitmq:5672/
+      K8S_NAMESPACE: agents
+      AGENT_IMAGE: agent-runner:latest
+      LOG_LEVEL: INFO
+    volumes:
+      - ~/.kube:/home/appuser/.kube:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
