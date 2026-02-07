@@ -8,7 +8,7 @@ Anton is an AI-powered autonomous code fixing pipeline. It receives webhooks fro
 
 ## Architecture
 
-Three decoupled Python 3.11 microservices communicate via RabbitMQ:
+Three decoupled Python 3.14 microservices communicate via RabbitMQ:
 
 ```
 Webhooks → Ingester (FastAPI) → RabbitMQ → Orchestrator → K8s Job (Runner) → GitHub PR
@@ -43,9 +43,9 @@ kubectl apply -f k8s/   # namespace, secrets, rabbitmq, ingester, orchestrator
 ### Build Docker Images
 
 ```bash
-docker build -t agent-ingester:latest ingester/
-docker build -t agent-orchestrator:latest orchestrator/
-docker build -t agent-runner:latest runner/
+docker build -t anton-ingester:latest ingester/
+docker build -t anton-orchestrator:latest orchestrator/
+docker build -t anton-runner:latest runner/
 ```
 
 ### Per-Service Development
@@ -84,7 +84,7 @@ There are currently no test suites, linting, or formatting commands configured.
 | `RABBITMQ_URL` | ingester, orchestrator | `amqp://rabbit:rabbit@rabbitmq:5672/` |
 | `WEBHOOK_SECRET` | ingester | `changeme-in-production` |
 | `K8S_NAMESPACE` | orchestrator | `agents` |
-| `AGENT_IMAGE` | orchestrator | `agent-runner:latest` |
+| `AGENT_IMAGE` | orchestrator | `anton-runner:latest` |
 
 ## Important File Locations
 

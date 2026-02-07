@@ -3,10 +3,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.backends"
 
 [project]
-name = "agent-ingester"
+name = "anton-ingester"
 version = "0.1.0"
 description = "Webhook ingester that normalizes JIRA, Datadog, and SonarCloud events into AgentTask messages"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.110,<1",
     "uvicorn[standard]>=0.29,<1",

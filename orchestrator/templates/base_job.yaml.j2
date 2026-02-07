@@ -4,7 +4,7 @@ metadata:
   name: {{ job_name }}
   namespace: {{ namespace }}
   labels:
-    app: agent-runner
+    app: anton-runner
     task-id: "{{ task_id }}"
     template: "{{ template_id }}"
 spec:
@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        app: agent-runner
+        app: anton-runner
         task-id: "{{ task_id }}"
         template: "{{ template_id }}"
     spec:
@@ -31,17 +31,17 @@ spec:
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: agent-secrets
+                  name: anton-secrets
                   key: anthropic-api-key
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: agent-secrets
+                  name: anton-secrets
                   key: openai-api-key
             - name: GITHUB_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: agent-secrets
+                  name: anton-secrets
                   key: github-token
           volumeMounts:
             - name: task-context

@@ -32,7 +32,7 @@ runner/         Autonomous code fixing agent
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.14+
 - Docker
 - Kubernetes cluster (for production deployment)
 - RabbitMQ instance
@@ -51,8 +51,8 @@ runner/         Autonomous code fixing agent
 
 ```bash
 # Build images
-docker build -t agent-ingester:latest ingester/
-docker build -t agent-runner:latest runner/
+docker build -t anton-ingester:latest ingester/
+docker build -t anton-runner:latest runner/
 
 # Run ingester locally with RabbitMQ
 cd ingester && docker compose up
@@ -66,13 +66,13 @@ python -m app  # from runner/
 
 ## Kubernetes Deployment
 
-Secrets are expected in a K8s Secret named `agent-secrets`:
+Secrets are expected in a K8s Secret named `anton-secrets`:
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: agent-secrets
+  name: anton-secrets
 stringData:
   anthropic-api-key: <your-key>
   openai-api-key: <your-key>

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ingester
-          image: agent-ingester:latest
+          image: anton-ingester:latest
           ports:
             - containerPort: 8000
           env:
@@ -24,7 +24,7 @@ spec:
             - name: WEBHOOK_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: agent-secrets
+                  name: anton-secrets
                   key: webhook-secret
             - name: LOG_LEVEL
               value: INFO

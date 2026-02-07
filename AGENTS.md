@@ -18,7 +18,7 @@ The system consists of three decoupled components:
 
 **Role:** The secure entry point for all external events. It acts as a "dumb pipe" to ensure speed, security, and standard formatting.
 
-* **Tech Stack:** Python 3.11, FastAPI, Pydantic, RabbitMQ (aio\_pika).  
+* **Tech Stack:** Python 3.14, FastAPI, Pydantic, RabbitMQ (aio\_pika).  
 * **Responsibilities:**  
   * **Webhook Verification:** Validates HMAC signatures from JIRA/Datadog to prevent unauthorized access.  
   * **Normalization:** Converts varied payloads (Jira JSON, Datadog Alert JSON) into a standardized AgentTask internal model.  
@@ -34,7 +34,7 @@ The system consists of three decoupled components:
 
 **Role:** The decision-making engine. It acts as the "Engineering Manager," analyzing the incoming task to select the right tools and risk profile before assigning work.
 
-* **Tech Stack:** Python 3.11, Kubernetes Python Client, Anthropic API (Claude 3.5 Sonnet).  
+* **Tech Stack:** Python 3.14, Kubernetes Python Client, Anthropic API (Claude 3.5 Sonnet).  
 * **Responsibilities:**  
   * **Consumer:** Listens to the orchestrator\_queue for new tasks.  
   * **The "Router" (LLM):** Sends the task context to Claude 3.5 to decide:  
@@ -53,7 +53,7 @@ The system consists of three decoupled components:
 
 **Role:** The "Software Engineer." It is an ephemeral container that runs for the duration of a single task and then destroys itself.
 
-* **Tech Stack:** Python 3.11, LangChain / Raw LLM Clients, git, GitHub CLI (gh).  
+* **Tech Stack:** Python 3.14, LangChain / Raw LLM Clients, git, GitHub CLI (gh).  
 * **Internal Workflow (The Loop):**  
   1. **Setup:** Clones the target repository and checks out a new branch fix/{task\_id}.  
   2. **Implementation (Claude 3.5 Sonnet):**  
@@ -84,7 +84,7 @@ The system consists of three decoupled components:
    * Claude replies: *"Use the java-backend template."*  
 4. **Dispatch:**  
    * Orchestrator creates ConfigMap agent-ctx-123.  
-   * Orchestrator applies Job/agent-runner-123.  
+   * Orchestrator applies Job/anton-runner-123.  
 5. **Execute:**  
    * K8S Job starts.  
    * Agent clones repo.  

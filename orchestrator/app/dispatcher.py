@@ -47,7 +47,7 @@ class JobManager:
             metadata=k8s_client.V1ObjectMeta(
                 name=configmap_name,
                 namespace=namespace,
-                labels={"app": "agent-runner", "task-id": task_id},
+                labels={"app": "anton-runner", "task-id": task_id},
             ),
             data={"task.json": json.dumps(context_data, indent=2, default=str)},
         )

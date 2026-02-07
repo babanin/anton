@@ -49,19 +49,19 @@ spec:
       serviceAccountName: orchestrator
       containers:
         - name: orchestrator
-          image: agent-orchestrator:latest
+          image: anton-orchestrator:latest
           env:
             - name: RABBITMQ_URL
               value: amqp://rabbit:rabbit@rabbitmq.agents.svc.cluster.local:5672/
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: agent-secrets
+                  name: anton-secrets
                   key: anthropic-api-key
             - name: K8S_NAMESPACE
               value: agents
             - name: AGENT_IMAGE
-              value: agent-runner:latest
+              value: anton-runner:latest
             - name: LOG_LEVEL
               value: INFO
           resources:
