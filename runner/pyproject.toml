@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.backends"
+
+[project]
+name = "anton-runner"
+version = "0.1.0"
+description = "Ephemeral K8s Job that clones repos, runs a Coder/Reviewer loop, and opens PRs"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=0.42,<1",
+    "openai>=1.58,<2",
+    "pydantic>=2,<3",
+    "pydantic-settings>=2,<3",
+    "python-json-logger>=2,<3",
+]
