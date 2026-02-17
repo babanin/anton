@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "anton.fullname" . }}-ingester
+  namespace: {{ include "anton.namespace" . }}
+  labels:
+    {{- include "anton.labels" . | nindent 4 }}
+    {{- include "anton.selectorLabels" (dict "context" . "component" "ingester") | nindent 4 }}
+spec:
+  replicas: {{ .Values.ingester.replicas }}
+  selector:
+    matchLabels:
+      {{- include "anton.selectorLabels" (dict "context" . "component" "ingester") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "anton.labels" . | nindent 8 }}
+        {{- include "anton.selectorLabels" (dict "context" . "component" "ingester") | nindent 8 }}
+    spec:
+      containers:
+        - name: ingester
+          image: {{ include "anton.image" (dict "image" .Values.ingester.image) }}
+          imagePullPolicy: {{ .Values.ingester.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+          env:
+            {{- if .Values.ingester.rabbitmqUrl }}
+            - name: RABBITMQ_URL
+              value: {{ .Values.ingester.rabbitmqUrl | quote }}
+            {{- else if .Values.rabbitmq.enabled }}
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "anton.secretName" . }}
+                  key: rabbitmq-password
+            - name: RABBITMQ_URL
+              value: "amqp://{{ .Values.rabbitmq.auth.username }}:$(RABBITMQ_PASSWORD)@{{ include "anton.rabbitmqHost" . }}.{{ include "anton.namespace" . }}.svc.cluster.local:5672/"
+            {{- end }}
+            - name: WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "anton.secretName" . }}
+                  key: webhook-secret
+            - name: LOG_LEVEL
+              value: {{ .Values.ingester.logLevel | quote }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          {{- with .Values.ingester.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

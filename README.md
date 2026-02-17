@@ -1,5 +1,7 @@
 # anton
 
+![](anton.webp)
+    
 AI-powered autonomous code fixing pipeline. Receives events from external systems, routes them through an LLM-based orchestrator, and dispatches agent jobs that fix code and open pull requests.
 
 ## Architecture
@@ -9,8 +11,8 @@ Webhooks (JIRA, Datadog, SonarCloud)
         │
         ▼
    ┌──────────┐     ┌──────────────┐     ┌────────────┐
-   │ Ingester  │────▶│ Orchestrator │────▶│   Runner   │
-   │ (FastAPI) │     │  (Consumer)  │     │  (K8s Job) │
+   │ Ingester │────▶│ Orchestrator │────▶│   Runner   │
+   │ (FastAPI)│     │  (Consumer)  │     │  (K8s Job) │
    └──────────┘     └──────────────┘     └────────────┘
         │ RabbitMQ       │ K8s API            │ GitHub
         ▼                ▼                    ▼
@@ -25,14 +27,17 @@ Webhooks (JIRA, Datadog, SonarCloud)
 ## Directory Structure
 
 ```
-ingester/       Webhook receiver and normalizer
-orchestrator/   Task router and K8s job dispatcher
-runner/         Autonomous code fixing agent
+charts/anton/          Helm chart for Kubernetes deployment
+ingester/              Webhook receiver and normalizer
+orchestrator/          Task router and K8s job dispatcher
+runner/                Autonomous code fixing agent
+.github/workflows/     CI/CD (Helm chart publishing)
 ```
 
 ## Prerequisites
 
-- Python 3.14+
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/) (dependency management)
 - Docker
 - Kubernetes cluster (for production deployment)
 - RabbitMQ instance
@@ -61,7 +66,7 @@ cd ingester && docker compose up
 export ANTHROPIC_API_KEY=...
 export OPENAI_API_KEY=...
 export GITHUB_TOKEN=...
-python -m app  # from runner/
+uv run python -m app  # from runner/
 ```
 
 ## Kubernetes Deployment
@@ -80,3 +85,54 @@ stringData:
 ```
 
 The orchestrator creates Jobs from `orchestrator/templates/base_job.yaml.j2`, mounting task configuration as a ConfigMap at `/app/context/task.json`.
+
+## Helm Chart
+
+A Helm chart is available for configurable Kubernetes deployments.
+
+### Add the repo
+
+```bash
+helm repo add anton https://babanin.github.io/anton
+helm repo update
+```
+
+### Install
+
+```bash
+helm install anton anton/anton \
+  --namespace agents --create-namespace \
+  --set secrets.anthropicApiKey="sk-..." \
+  --set secrets.openaiApiKey="sk-..." \
+  --set secrets.githubToken="ghp_..." \
+  --set secrets.webhookSecret="your-webhook-secret"
+```
+
+### External RabbitMQ
+
+```bash
+helm install anton anton/anton \
+  --namespace agents --create-namespace \
+  --set rabbitmq.enabled=false \
+  --set ingester.rabbitmqUrl="amqp://user:pass@rabbitmq.example.com:5672/" \
+  --set orchestrator.rabbitmqUrl="amqp://user:pass@rabbitmq.example.com:5672/"
+```
+
+### Enable Ingress
+
+```bash
+helm install anton anton/anton \
+  --namespace agents --create-namespace \
+  --set ingress.enabled=true \
+  --set ingress.className=nginx \
+  --set "ingress.hosts[0].host=anton.example.com" \
+  --set "ingress.hosts[0].paths[0].path=/"
+```
+
+### Uninstall
+
+```bash
+helm uninstall anton -n agents
+```
+
+See [`charts/anton/values.yaml`](charts/anton/values.yaml) for the full configuration reference.

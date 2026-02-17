@@ -1,0 +1,14 @@
+apiVersion: v2
+name: anton
+description: AI-powered autonomous code fixing pipeline
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: Ivan Babanin
+keywords:
+  - ai
+  - code-fixing
+  - kubernetes
+  - rabbitmq
+home: https://github.com/babanin/anton

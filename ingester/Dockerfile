@@ -1,18 +1,16 @@
-FROM python:3.14-slim AS builder
+FROM python:3.13-slim
 
-WORKDIR /build
-COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
-
-FROM python:3.14-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN groupadd --system appuser && useradd --system --gid appuser appuser
 
-COPY --from=builder /install /usr/local
 WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-editable
+
 COPY app/ app/
 
 USER appuser
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "anton.fullname" . }}-orchestrator
+  namespace: {{ include "anton.namespace" . }}
+  labels:
+    {{- include "anton.labels" . | nindent 4 }}
+    {{- include "anton.selectorLabels" (dict "context" . "component" "orchestrator") | nindent 4 }}
+spec:
+  replicas: {{ .Values.orchestrator.replicas }}
+  selector:
+    matchLabels:
+      {{- include "anton.selectorLabels" (dict "context" . "component" "orchestrator") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "anton.labels" . | nindent 8 }}
+        {{- include "anton.selectorLabels" (dict "context" . "component" "orchestrator") | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "anton.fullname" . }}-orchestrator
+      containers:
+        - name: orchestrator
+          image: {{ include "anton.image" (dict "image" .Values.orchestrator.image) }}
+          imagePullPolicy: {{ .Values.orchestrator.image.pullPolicy }}
+          env:
+            {{- if .Values.orchestrator.rabbitmqUrl }}
+            - name: RABBITMQ_URL
+              value: {{ .Values.orchestrator.rabbitmqUrl | quote }}
+            {{- else if .Values.rabbitmq.enabled }}
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "anton.secretName" . }}
+                  key: rabbitmq-password
+            - name: RABBITMQ_URL
+              value: "amqp://{{ .Values.rabbitmq.auth.username }}:$(RABBITMQ_PASSWORD)@{{ include "anton.rabbitmqHost" . }}.{{ include "anton.namespace" . }}.svc.cluster.local:5672/"
+            {{- end }}
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "anton.secretName" . }}
+                  key: anthropic-api-key
+            - name: K8S_NAMESPACE
+              value: {{ include "anton.runnerNamespace" . | quote }}
+            - name: AGENT_IMAGE
+              value: {{ include "anton.runnerImage" . | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.orchestrator.logLevel | quote }}
+          {{- with .Values.orchestrator.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

@@ -1,0 +1,105 @@
+# Default values for anton.
+
+nameOverride: ""
+fullnameOverride: ""
+namespaceOverride: ""
+
+# Set to true to create the target namespace as part of the release.
+createNamespace: false
+
+# -- Secrets configuration.
+# The secret name defaults to "anton-secrets" to match the hardcoded reference
+# in the runner Job template (orchestrator/templates/base_job.yaml.j2).
+secrets:
+  # Set to false if you manage secrets externally (Vault, ESO, Sealed Secrets).
+  create: true
+  name: "anton-secrets"
+  anthropicApiKey: ""
+  openaiApiKey: ""
+  githubToken: ""
+  webhookSecret: "changeme-in-production"
+  rabbitmqPassword: "rabbit"
+
+# -- Embedded RabbitMQ broker.
+# Set enabled: false and configure ingester.rabbitmqUrl / orchestrator.rabbitmqUrl
+# to use an external broker.
+rabbitmq:
+  enabled: true
+  image:
+    repository: rabbitmq
+    tag: "3.13-management-alpine"
+  auth:
+    username: rabbit
+    # Password is read from the Secret (secrets.rabbitmqPassword).
+  persistence:
+    enabled: true
+    size: 1Gi
+    # storageClass: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# -- Ingester (FastAPI webhook receiver).
+ingester:
+  image:
+    registry: ghcr.io
+    repository: babanin/anton-ingester
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 2
+  logLevel: INFO
+  # Override to point at an external RabbitMQ. Leave empty to use the embedded broker.
+  rabbitmqUrl: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+# -- Orchestrator (RabbitMQ consumer + K8s job dispatcher).
+orchestrator:
+  image:
+    registry: ghcr.io
+    repository: babanin/anton-orchestrator
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  logLevel: INFO
+  # Override to point at an external RabbitMQ. Leave empty to use the embedded broker.
+  rabbitmqUrl: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  # Runner Job configuration (passed to orchestrator via env vars).
+  runner:
+    image:
+      registry: ghcr.io
+      repository: babanin/anton-runner
+      tag: latest
+    # Namespace where runner Jobs are created. Defaults to the release namespace.
+    namespace: ""
+
+# -- Optional Ingress for the ingester service.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  #  - host: anton.example.com
+  #    paths:
+  #      - path: /
+  #        pathType: Prefix
+  tls: []
+  #  - secretName: anton-tls
+  #    hosts:
+  #      - anton.example.com

@@ -1,0 +1,31 @@
+Anton has been deployed to namespace "{{ include "anton.namespace" . }}".
+
+Components:
+  - Ingester:     {{ .Values.ingester.replicas }} replica(s)
+  - Orchestrator: {{ .Values.orchestrator.replicas }} replica(s)
+{{- if .Values.rabbitmq.enabled }}
+  - RabbitMQ:     embedded (1 replica)
+{{- else }}
+  - RabbitMQ:     external
+{{- end }}
+
+{{- if .Values.ingress.enabled }}
+
+Ingester is accessible via Ingress:
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ (first .paths).path }}
+{{- end }}
+{{- else }}
+
+To access the ingester, forward the service port:
+  kubectl port-forward -n {{ include "anton.namespace" . }} svc/{{ include "anton.fullname" . }}-ingester 8000:80
+
+Then send webhooks to http://localhost:8000
+{{- end }}
+
+{{- if .Values.rabbitmq.enabled }}
+
+RabbitMQ management UI:
+  kubectl port-forward -n {{ include "anton.namespace" . }} svc/{{ include "anton.rabbitmqHost" . }} 15672:15672
+  Then open http://localhost:15672
+{{- end }}

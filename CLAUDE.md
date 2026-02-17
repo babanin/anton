@@ -8,7 +8,7 @@ Anton is an AI-powered autonomous code fixing pipeline. It receives webhooks fro
 
 ## Architecture
 
-Three decoupled Python 3.14 microservices communicate via RabbitMQ:
+Three decoupled Python 3.13 microservices communicate via RabbitMQ:
 
 ```
 Webhooks → Ingester (FastAPI) → RabbitMQ → Orchestrator → K8s Job (Runner) → GitHub PR
@@ -51,16 +51,16 @@ docker build -t anton-runner:latest runner/
 ### Per-Service Development
 
 ```bash
-# Install dependencies
-pip install -r ingester/requirements.txt
-pip install -r orchestrator/requirements.txt
-pip install -r runner/requirements.txt
+# Install dependencies (requires uv: https://docs.astral.sh/uv/)
+cd ingester && uv sync
+cd orchestrator && uv sync
+cd runner && uv sync
 
 # Run ingester only (with local RabbitMQ)
 cd ingester && docker compose up
 
 # Run runner locally (requires env vars)
-cd runner && python -m app
+cd runner && uv run python -m app
 ```
 
 There are currently no test suites, linting, or formatting commands configured.

@@ -1,0 +1,21 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "anton.rabbitmqHost" . }}
+  namespace: {{ include "anton.namespace" . }}
+  labels:
+    {{- include "anton.labels" . | nindent 4 }}
+    {{- include "anton.selectorLabels" (dict "context" . "component" "rabbitmq") | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    {{- include "anton.selectorLabels" (dict "context" . "component" "rabbitmq") | nindent 4 }}
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+{{- end }}

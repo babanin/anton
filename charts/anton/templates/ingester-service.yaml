@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "anton.fullname" . }}-ingester
+  namespace: {{ include "anton.namespace" . }}
+  labels:
+    {{- include "anton.labels" . | nindent 4 }}
+    {{- include "anton.selectorLabels" (dict "context" . "component" "ingester") | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "anton.selectorLabels" (dict "context" . "component" "ingester") | nindent 4 }}
+  ports:
+    - port: 80
+      targetPort: 8000
