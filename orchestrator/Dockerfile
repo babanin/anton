@@ -6,10 +6,11 @@ RUN groupadd --system appuser && useradd --system --gid appuser appuser
 
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-editable
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app/ app/
 COPY templates/ templates/
+RUN uv sync --frozen --no-dev --no-editable
 
 USER appuser
 
